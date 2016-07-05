@@ -88,3 +88,4 @@ $RECYCLE.BIN/
 .vscode
 
 # Environment values
+.env
