@@ -1,0 +1,31 @@
+{
+  "name": "bots",
+  "version": "1.0.0",
+  "description": "Sample bots",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GeekTrainer/bots.git"
+  },
+  "keywords": [
+    "Bots"
+  ],
+  "author": "Christopher Harrison",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GeekTrainer/bots/issues"
+  },
+  "homepage": "https://github.com/GeekTrainer/bots#readme",
+  "dependencies": {
+    "botbuilder": "^1.0.1",
+    "botkit": "^0.2.2",
+    "dotenv": "^2.0.0",
+    "http": "0.0.0",
+    "https": "^1.0.0",
+    "querystring": "^0.2.0",
+    "restify": "^4.1.1"
+  }
+}
