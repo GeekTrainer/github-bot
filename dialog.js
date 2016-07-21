@@ -5,15 +5,17 @@ var querystring = require('querystring');
 var prompts = require('./prompts');
 
 var model = process.env.LUIS_MODEL;
+var recognizer = new builder.LuisRecognizer(model)
+var dialog = new builder.IntentDialog({ recognizers: [recognizer]});
 
-module.exports = new builder.LuisDialog(model)
-    .onDefault(builder.DialogAction.send(prompts.userWelcomeMessage))
-    .on('LoadProfile', [
-        confirmUsername, getProfile, confirmProperty, displayInformation
+module.exports = dialog
+    .matches('LoadProfile', [
+        confirmUsername, getProfile
     ])
-    .on('SearchProfile', [
+    .matches('SearchProfile', [
         confirmQuery, searchProfiles, getProfile, confirmProperty, displayInformation
-    ]);
+    ])
+    .onDefault([sendInstructions, redirectConversation]);
 
 function confirmQuery(session, args, next) {
     session.dialogData.entities = args.entities;
@@ -24,6 +26,20 @@ function confirmQuery(session, args, next) {
     } else {
         builder.Prompts.text(session, 'Who are you searching for?');
     }
+}
+
+var options = {
+    'Load profile': 'LoadProfile'
+}
+
+function sendInstructions(session, results, next) {
+    builder.Prompts.choice(session, 'What information are you looking for?', options);
+}
+
+function redirectConversation(session, results, next) {
+    console.log(results.response);
+    // builder.DialogAction.beginDialog(options[results.response.entity]);
+    session.beginDialog('/', { response: results.response.entity });
 }
 
 function searchProfiles(session, results, next) {
@@ -73,6 +89,23 @@ function getProfile(session, results, next) {
         loadProfile(username, function(profile) {
             if(profile && profile.message !== 'Not Found') {
                 session.dialogData.profile = profile;
+
+                var thumbnail = new builder.ThumbnailCard(session);
+                thumbnail.subtitle(profile.name);
+                thumbnail.title(profile.login);
+                thumbnail.images([builder.CardImage.create(session, profile.avatar_url)]);
+
+                var text = '';
+                if(profile.company) text += profile.company + '\n';
+                if(profile.email) text += profile.email + '\n';
+                if(profile.bio) text += profile.bio;
+                thumbnail.text(text);
+
+                thumbnail.tap(new builder.CardAction.openUrl(session, profile.html_url));
+                
+                var message = new builder.Message(session).attachments([thumbnail]);
+                session.send(message);
+
                 next();
             } else {
                 session.endDialog('Sorry, couldn\'t find a profile with that name. You can do a search for a profile.');
