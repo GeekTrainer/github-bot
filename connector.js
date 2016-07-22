@@ -17,20 +17,5 @@ module.exports = {
         var bot = new builder.UniversalBot(connector);
         server.post('/api/messages', connector.listen());
         bot.dialog('/', dialog);
-
-
-        // var bot = new builder.BotConnectorBot({ appId: 'id', appSecret: 'secret' });
-        // bot.add('/', dialog);
-
-        // bot.configure({
-        //     userWelcomeMessage: prompts.userWelcomeMessage 
-        // });
-
-        // var server = restify.createServer();
-        // server.post('/api/messages', bot.verifyBotFramework(), bot.listen());
-        // server.listen(process.env.port || 3978, function () {
-        //     console.log('listening');
-        // });
-        // return bot;
     }
 }
