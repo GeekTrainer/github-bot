@@ -1,4 +1,3 @@
-var Botkit = require('botkit');
 var builder = require('botbuilder');
 var https = require('https');
 var querystring = require('querystring');
