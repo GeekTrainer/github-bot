@@ -114,8 +114,8 @@ function getProfileThumbnail(session, profile) {
     if(profile.name) thumbnail.subtitle(profile.name);
 
     var text = '';
-    if (profile.company) text += profile.company + '\n';
-    if (profile.email) text += profile.email + '\n';
+    if (profile.company) text += profile.company + ' \n';
+    if (profile.email) text += profile.email + ' \n';
     if (profile.bio) text += profile.bio;
     thumbnail.text(text);
 
