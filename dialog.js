@@ -1,7 +1,8 @@
 var builder = require('botbuilder');
+
 var https = require('https');
 var querystring = require('querystring');
-var prompts = require('./prompts');
+var prompts = require('./prompts.js');
 
 var model = process.env.LUIS_MODEL;
 var recognizer = new builder.LuisRecognizer(model)
@@ -12,9 +13,9 @@ module.exports = dialog
         confirmUsername, getProfile
     ])
     .matches('SearchProfile', [
-        confirmQuery, searchProfiles, getProfile
+        confirmQuery, searchProfiles
     ])
-    .onDefault([sendInstructions, redirectConversation]);
+    .onDefault([sendInstructions]);
 
 function confirmQuery(session, args, next) {
     session.dialogData.entities = args.entities;
@@ -34,10 +35,7 @@ var options = [
 
 function sendInstructions(session, results, next) {
     builder.Prompts.choice(session, 'What information are you looking for?', options);
-}
-
-function redirectConversation(session, results, next) {
-    session.beginDialog('/', { response: results.response.entity });
+    next();
 }
 
 function searchProfiles(session, results, next) {
@@ -53,9 +51,6 @@ function searchProfiles(session, results, next) {
                 session.endDialog('More than 10 results were found. Please provide a more restrictive query.');
             } else {
                 session.dialogData.property = null;
-                // var usernames = profiles.items.map(function (item) { return item.login });
-                // builder.Prompts.choice(session, 'What user do you want to load?', usernames);
-
                 var thumbnails = profiles.items.map(function(item) { return getProfileThumbnail(session, item)});
                 var message = new builder.Message(session).attachments(thumbnails).attachmentLayout('carousel');
                 session.send(message);
@@ -70,8 +65,6 @@ function confirmUsername(session, args, next) {
     var username = builder.EntityRecognizer.findEntity(args.entities, 'username');
     if (username) {
         next({ response: username.entity });
-    } else if (session.dialogData.username) {
-        next({ response: session.dialogData.username });
     } else {
         builder.Prompts.text(session, 'What is the username?');
     }
@@ -85,13 +78,9 @@ function getProfile(session, results, next) {
 
     if (!username) {
         session.endDialog('Request cancelled.');
-    } else if (session.dialogData.profile && typeof (session.dialogData.profile.login) !== 'undefined' && session.dialogData.profile.login.toLowerCase() == username.toLowerCase()) {
-        next();
     } else {
         loadProfile(username, function (profile) {
             if (profile && profile.message !== 'Not Found') {
-                session.dialogData.profile = profile;
-
                 var message = new builder.Message(session).attachments([getProfileThumbnail(session, profile)]);
                 session.send(message);
 
@@ -150,5 +139,3 @@ function loadData(path, callback) {
     });
     request.end();
 }
-
-var properties = ['email', 'name', 'bio', 'location', 'company'];
