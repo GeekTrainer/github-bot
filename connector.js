@@ -11,11 +11,21 @@ module.exports = {
         });
 
         var connector = new builder.ChatConnector({
-            appId: process.env.MICROSOFT_APP_ID,
-            appPassword: process.env.MICROSOFT_APP_PASSWORD
+            // appId: process.env.MICROSOFT_APP_ID,
+            // appPassword: process.env.MICROSOFT_APP_PASSWORD
         });
+
         var bot = new builder.UniversalBot(connector);
+
+        server.use(restify.queryParser());
+
         server.post('/api/messages', connector.listen());
+
+        server.get('/oauth', (req, res, next) => {
+            // console.log(req.query.code);
+            res.send(200, 'Paste this code into the bot: ' + req.query.code);
+        });
+
         bot.dialog('/', dialog);
     }
 }
