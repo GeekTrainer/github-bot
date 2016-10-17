@@ -22,7 +22,6 @@ module.exports = {
         server.post('/api/messages', connector.listen());
 
         server.get('/oauth', (req, res, next) => {
-            // console.log(req.query.code);
             res.send(200, 'Paste this code into the bot: ' + req.query.code);
         });
 

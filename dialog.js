@@ -1,14 +1,19 @@
 "use strict";
 
-var builder = require('botbuilder');
+const builder = require('botbuilder');
 
-var https = require('https');
-var querystring = require('querystring');
-var prompts = require('./prompts.js');
+const https = require('https');
+const querystring = require('querystring');
+const prompts = require('./prompts.js');
 
-var model = process.env.LUIS_MODEL;
-var recognizer = new builder.LuisRecognizer(model)
-var dialog = new builder.IntentDialog({ recognizers: [recognizer] });
+const model = process.env.LUIS_MODEL;
+const recognizer = new builder.LuisRecognizer(model)
+const dialog = new builder.IntentDialog({ recognizers: [recognizer] });
+
+const options = [
+    'Load profile',
+    'Search profiles',
+];
 
 module.exports = dialog
     .matches('LoadProfile', [
@@ -16,53 +21,6 @@ module.exports = dialog
     ])
     .matches('SearchProfile', [
         confirmQuery, searchProfiles
-    ])
-    .matches(/login/i, [
-        (session) => {
-            const url = 'https://github.com/login/oauth/authorize?scope=user&client_id=c01d1ca9f8642219854c&redirect_uri=' + querystring.escape('http://localhost:3978/oauth');
-            let card = new builder.ThumbnailCard(session)
-                            .text('Click to authenticate')
-                            .tap(new builder.CardAction.openUrl(session, url));
-            session.send(new builder.Message(session).attachments([card]));
-            builder.Prompts.text(session, 'When you receive the code, please paste that into the window.');
-        },
-        (session, result) => {
-            const code = result.response;
-
-            const postData = querystring.stringify({
-                    'client_id': process.env.CLIENT_ID,
-                    'client_secret': process.env.CLIENT_SECRET,
-                    'code': code
-            });
-
-            let options = {
-                host: 'github.com',
-                port: 443,
-                path: '/login/oauth/access_token',
-                method: 'POST',
-                headers: {
-                    'User-Agent': 'sample-bot',
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Content-Length': Buffer.byteLength(postData)
-                }
-            };
-            let profile;
-            let request = https.request(options, function (response) {
-                let data = '';
-                response.on('data', function (chunk) { data += chunk; });
-                response.on('end', function () {
-                    const reply = querystring.parse(data);
-                    console.log(reply);
-                    const path = '/user?access_token=' + reply.access_token;
-                    
-                    loadData(path, (profile) => {
-                        console.log(profile);
-                    });
-                });
-            });
-            request.write(postData);
-            request.end();
-        }
     ])
     .onDefault([sendInstructions]);
 
@@ -76,11 +34,6 @@ function confirmQuery(session, args, next) {
         builder.Prompts.text(session, 'Who are you searching for?');
     }
 }
-
-var options = [
-    'Load profile',
-    'Search profiles'
-]
 
 function sendInstructions(session, results, next) {
     builder.Prompts.choice(session, 'What information are you looking for?', options);
