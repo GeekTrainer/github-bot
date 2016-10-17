@@ -81,7 +81,7 @@ function getProfile(session, results, next) {
     if (!username) {
         session.endDialog('Request cancelled.');
     } else {
-        loadProfile(username, function (profile) {
+        loadProfile(username, (profile) => {
             if (profile && profile.message !== 'Not Found') {
                 var message = new builder.Message(session).attachments([getProfileThumbnail(session, profile)]);
                 session.send(message);
